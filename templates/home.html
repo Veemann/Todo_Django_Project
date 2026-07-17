@@ -1,0 +1,150 @@
+
+{% extends "base.html" %}
+
+
+{% block  content %}
+<div class="app">
+  <header>
+    <div class="eyebrow">Today</div>
+    <h1> {{greetings}}</h1>
+    <h1>What needs <em>doing</em>?</h1>
+    <p class="sub">Add a task, check it off when it's done. Nothing here leaves this page.</p>
+  </header>
+
+  <form id="task-form">
+    <input id="task-input" type="text" placeholder="e.g. Reply to client email" autocomplete="off" maxlength="140">
+    <button type="submit" class="add">Add task</button>
+  </form>
+
+  <div class="meta-row">
+    <span id="count-label">{{ tasks.count}} tasks</span>
+    <div href="filters">
+      <a href="{%url "home" %}" class="active">All</a>
+      <a href="{%url "tasks" 'true' %}" >Done</a>
+      <a href="{%url "tasks" 'false' %}"> Not Done</a>
+    </div>
+  </div>
+
+  <ul id="list">
+    {% for task  in tasks  %}
+
+    {% if task.done  %}
+    <li class="item done">
+      {% else %}
+      <li class="item">
+    {% endif %}
+
+      <span class="check" role="checkbox" aria-checked={{task.done}} tabindex="0">
+        <svg viewBox="0 0 22 22">
+      <circle cx="11" cy="11" r="9.3"></circle>
+      <path d="M6.5 11.5l3 3 6-6.5"></path>
+    </svg>
+      </span>
+      {{task.title}} &nbsp; <a href="{% url "task" pk=task.id %}">Edit</a>
+      &nbsp;&nbsp;
+    {% comment %} <span class="label">{{task.text}}</span>{% endcomment %}
+    <a href="{% url "task" pk=task.id %}"<Edit</a>
+    <a href="{% url "task" pk=task.id %}" class="remove" aria-label="Delete task">x</a>
+    </li>
+    {% endfor %}
+  </ul>
+  <div class="empty" id="empty-state" style="display:none;">
+    <div class="glyph">nothing yet</div>
+    <p>Type something above and press Add task.</p>
+  </div>
+</div>
+{% endblock content %}
+
+<script>
+  const form = document.getElementById('task-form');
+  const input = document.getElementById('task-input');
+  //const list = document.getElementById('list');
+  const countLabel = document.getElementById('count-label');
+  const emptyState = document.getElementById('empty-state');
+  const filterButtons = document.querySelectorAll('.filters button');
+
+  //let tasks = [
+    //{ id: 1, text: 'Sketch the page layout', done: true },
+    //{ id: 2, text: 'Wire up the add-task form', done: false },
+   // { id: 3, text: 'Ship it', done: false }
+  ];
+  let nextId = 4;
+  let currentFilter = 'all';
+
+  const checkSVG = `
+    <svg viewBox="0 0 22 22">
+      <circle cx="11" cy="11" r="9.3"></circle>
+      <path d="M6.5 11.5l3 3 6-6.5"></path>
+    </svg>`;
+
+  function render(){
+    list.innerHTML = '';
+    const visible = tasks.filter(t => {
+      if(currentFilter === 'active') return !t.done;
+      if(currentFilter === 'done') return t.done;
+      return true;
+    });
+
+    visible.forEach(task => {
+      const li = document.createElement('li');
+      li.className = 'item' + (task.done ? ' done' : '');
+      li.innerHTML = `
+        <span class="check" role="checkbox" aria-checked="${task.done}" tabindex="0">${checkSVG}</span>
+        <span class="label">${escapeHTML(task.text)}</span>
+        <button class="remove" aria-label="Delete task">✕</button>
+      `;
+
+      li.querySelector('.check').addEventListener('click', () => toggle(task.id));
+      li.querySelector('.check').addEventListener('keydown', (e) => {
+        if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); toggle(task.id); }
+      });
+      li.querySelector('.remove').addEventListener('click', () => remove(task.id));
+
+      list.appendChild(li);
+    });
+
+    emptyState.style.display = visible.length ? 'none' : 'block';
+
+    const remaining = tasks.filter(t => !t.done).length;
+    countLabel.textContent = tasks.length === 0
+      ? '0 tasks'
+      : ${remaining} of ${tasks.length} left;
+  }
+
+  function toggle(id){
+    tasks = tasks.map(t => t.id === id ? { ...t, done: !t.done } : t);
+    render();
+  }
+
+  function remove(id){
+    tasks = tasks.filter(t => t.id !== id);
+    render();
+  }
+
+  function escapeHTML(str){
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const value = input.value.trim();
+    if(!value) return;
+    tasks.push({ id: nextId++, text: value, done: false });
+    input.value = '';
+    render();
+  });
+
+  filterButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      filterButtons.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentFilter = btn.dataset.filter;
+      render();
+    });
+  });
+
+  render();
+</script>
+

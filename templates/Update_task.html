@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<form method = "POST"> 
+    {% csrf_token %}
+    {{form.as_p}}
+    {% comment %} <label for="title">Title</label>
+    <input type="text" name = "title" value = "{{task.title}}">
+    <br>
+    <label for = "due_time"> Due Time </label>
+    <p> {{task.due_time}} </p>
+    <input type = "datetime-local" name = "due_time" placeholder = "Enter due date/time"  value ="{{task.due_time}}"  required>{% endcomment %}
+    <br>
+    <input type="checkbox" name = 'done'{%if task.done%} checked {% endif %}> Done
+    <button type="Submit">Update</button>
+
+{% comment %} 
+    <input type="text" name="title" placeholder="Enter task title" required>
+    <input type = "datetime-local" name = "due_time" placeholder = "Enter due date/time"  value ="{{task.due_time}}"  required>  {% endcomment %}
+</form>
+{%endblock content%}

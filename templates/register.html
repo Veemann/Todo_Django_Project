@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block content %}
+{%if errors%}
+{% for error in errors %}
+<div>
+    <h6>
+        {{error}}
+
+    </h6>
+</div>
+{% endfor  %}
+{% endif %}
+<form method = "POST"> 
+    {% csrf_token %}
+    {{form.as_p}}
+    <input type="text" name="title" placeholder="Enter task title">
+    <input type = "datetime-local" name = "due_time" placeholder = "Enter due date/time">
+    <button type="submit">Register</button>
+</form>
+{% endblock content %}
