@@ -129,5 +129,12 @@ STORAGES = {
     },
 }
 
-MEDIAURL = 'media/'
+
+CSRF_TRUSTED_ORIGINS = [
+    "https://taskd-mzga.onrender.com",
+]
+
+CORS_ALLOW_ALL_ORIGINS = True
+
+MEDIA_URL = 'media/'
 MEDIA_ROOT = 'media'
